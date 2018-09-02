@@ -1,0 +1,7 @@
+'こんにちは
+= @user.name
+'さん
+="\n" * 2
+'サンプルサイトへようこそ！リンクをクリックしてアカウントを認証してください：
+="\n" * 2
+= edit_account_activation_url(@user.activation_token,email: @user.email)
