@@ -71,15 +71,9 @@ class User < ApplicationRecord
     end
 
     #タイムラインの表示
-    #def feed
-    #    following_ids = "SELECT followed_id FROM relationships WHERE follower_id = :user_id"
-    #    Micropost.where("user_id IN (#{following_ids}) OR user_id = :user_id", user_id: id)
-    #end
-
-    #reply変更
-
-    def feed(user)
-        Micropost.including_replies(user).followed_by(self)
+    def feed
+        following_ids = "SELECT followed_id FROM relationships WHERE follower_id = :user_id"
+        Micropost.where("in_reply_to = :reply OR user_id IN (#{following_ids}) OR user_id = :user_id",reply: "@#{user_name}", user_id: id)
     end
 
     #ユーザーをフォローする
