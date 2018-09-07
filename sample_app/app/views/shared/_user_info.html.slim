@@ -7,6 +7,5 @@ h1
 span
   = link_to "プロフィール", current_user
 span
-  //= pluralize(current_user.microposts.count, "micropost")
   |投稿数 
   = current_user.microposts.count

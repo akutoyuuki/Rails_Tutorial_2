@@ -3,6 +3,6 @@ li
   = link_to user.name, user 
   |  | @
   = user.user_name
-  - if current_user.admin? && !current_user?(user)
+  - if current_user.admin? || current_user?(user)
     |  | 
     =link_to "削除", user, method: :delete, data: {confirm: "本当によろしいですか?"}

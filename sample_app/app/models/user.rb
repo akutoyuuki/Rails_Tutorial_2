@@ -8,28 +8,26 @@ class User < ApplicationRecord
     before_save :downcase_email
     before_create :create_activation_digest
     validates :name, presence: true, length: { maximum: 50 }
-    VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
-    validates :email, presence: true, length: { maximum: 255 }, format: { with: VALID_EMAIL_REGEX }, uniqueness: { case_sensitive: false }
+    validates :email, presence: true, length: { maximum: 255 }, email_format: true, uniqueness: { case_sensitive: false }
     has_secure_password
-    validates :password, presence: true, length: { minimum: 6}, allow_nil: true
-    VALID_USER_NAME_REGEX = /\A[\w+\-]+\z/i
-    validates :user_name, presence: true, length: { maximum: 20 }, format: { with: VALID_USER_NAME_REGEX }, uniqueness: { case_sensitive: false }
+    validates :password, presence: true, length: { minimum: 6}
+    validates :user_name, presence: true, length: { maximum: 20 }, user_name_format: true, uniqueness: { case_sensitive: false }
 
     #渡された文字列のハッシュ値を返す
-    def User.digest(string)
+    def change_digest(string)
         cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST : BCrypt::Engine.cost
         BCrypt::Password.create(string, cost: cost)
     end
 
     #ランダムなトークンを返す
-    def User.new_token
+    def new_token
         SecureRandom.urlsafe_base64
     end
 
     #永続セッションのためにユーザーをデータベースに記憶する
     def remember
-        self.remember_token = User.new_token
-        update_attribute(:remember_digest, User.digest(remember_token))
+        self.remember_token = new_token
+        update_attribute(:remember_digest, change_digest(remember_token))
     end
 
     #渡されたトークンがダイジェストと一致したらtrueを返す
@@ -56,8 +54,8 @@ class User < ApplicationRecord
 
     #パスワード再設定の属性を設定する
     def create_reset_digest
-        self.reset_token = User.new_token
-        update_columns(reset_digest: User.digest(reset_token), reset_sent_at: Time.zone.now)
+        self.reset_token = new_token
+        update_columns(reset_digest: change_digest(reset_token), reset_sent_at: Time.zone.now)
     end
 
     #パスワード再設定のメールを送信する
@@ -70,7 +68,7 @@ class User < ApplicationRecord
         reset_sent_at < 2.hours.ago
     end
 
-    #タイムラインの表示
+    #タイムラインデータの検索
     def feed
         following_ids = "SELECT followed_id FROM relationships WHERE follower_id = :user_id"
         Micropost.where("in_reply_to = :reply OR user_id IN (#{following_ids}) OR user_id = :user_id",reply: "@#{user_name}", user_id: id)
@@ -87,7 +85,7 @@ class User < ApplicationRecord
     end
 
     #現在のユーザーがフォローしてたらtrueを返す
-    def following?(other_user)
+    def is_following?(other_user)
         following.include?(other_user)
     end
 
@@ -99,7 +97,7 @@ class User < ApplicationRecord
 
         #有効化トークンとダイジェストを作成及び代入する
         def create_activation_digest
-            self.activation_token = User.new_token
-            self.activation_digest = User.digest(activation_token)
+            self.activation_token = new_token
+            self.activation_digest = change_digest(activation_token)
         end
 end
