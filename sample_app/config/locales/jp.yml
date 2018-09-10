@@ -1,0 +1,24 @@
+ja:
+    helpers:
+        submit:
+            create: 登録する
+            submit: 保存する
+            update: 更新する
+    activerecord:
+        models:
+          user: ユーザー
+          micropost: 投稿
+          relationship: 相互関係
+        attributes:
+            user:
+                name: 名前
+                email: メールアドレス
+                password: パスワード
+                password_confirmation: パスワードの確認
+                user_name: ユーザーID
+            micropost:
+                user_id: 投稿者
+                content: 内容
+            relationship:
+                follower_id: フォロワー
+                followed_id: フォロー

@@ -1,0 +1,20 @@
+- provide(:title, "ホーム")
+
+- if logged_in?
+  .row
+    aside.col-md-4
+      section.user_info
+        ==render 'shared/user_info'
+      section.stats
+        ==render 'shared/stats'
+      section.micropost_form
+        ==render 'shared/micropost_form'
+    .col-md-8
+      h3
+        |みんなの投稿
+      ==render 'shared/feed'
+- else
+  .center.jumbotron
+    h1 サンプルサイトへようこそ!
+
+    = link_to "sign up now!", signup_path, class: "btn-lg btn-primary"
