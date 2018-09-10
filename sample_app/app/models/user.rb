@@ -14,7 +14,7 @@ class User < ApplicationRecord
     validates :user_name, presence: true, length: { maximum: 20 }, user_name_format: true, uniqueness: { case_sensitive: false }
 
     #渡された文字列のハッシュ値を返す
-    def change_digest(string)
+    def get_digest(string)
         cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST : BCrypt::Engine.cost
         BCrypt::Password.create(string, cost: cost)
     end
@@ -27,7 +27,7 @@ class User < ApplicationRecord
     #永続セッションのためにユーザーをデータベースに記憶する
     def remember
         self.remember_token = new_token
-        update_attribute(:remember_digest, change_digest(remember_token))
+        update_attribute(:remember_digest, get_digest(remember_token))
     end
 
     #渡されたトークンがダイジェストと一致したらtrueを返す
@@ -55,7 +55,7 @@ class User < ApplicationRecord
     #パスワード再設定の属性を設定する
     def create_reset_digest
         self.reset_token = new_token
-        update_columns(reset_digest: change_digest(reset_token), reset_sent_at: Time.zone.now)
+        update_columns(reset_digest: get_digest(reset_token), reset_sent_at: Time.zone.now)
     end
 
     #パスワード再設定のメールを送信する
@@ -98,6 +98,6 @@ class User < ApplicationRecord
         #有効化トークンとダイジェストを作成及び代入する
         def create_activation_digest
             self.activation_token = new_token
-            self.activation_digest = change_digest(activation_token)
+            self.activation_digest = get_digest(activation_token)
         end
 end

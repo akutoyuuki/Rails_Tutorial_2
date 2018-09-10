@@ -1,5 +1,4 @@
 class PasswordResetsController < ApplicationController
-  before_action :valid_user_check, only: [:edit, :update]
   before_action :check_expiration, only: [:edit, :update]
 
   def new
@@ -17,9 +16,11 @@ class PasswordResetsController < ApplicationController
   end
   
   def edit
+    redirect_to root_url and return unless user_valid?
   end
 
   def update
+    redirect_to root_url and return unless user_valid?
     if user.update_attributes(user_params)
       log_in user
       user.update_attribute(:reset_digest, nil)
@@ -40,12 +41,8 @@ class PasswordResetsController < ApplicationController
     end
 
     #正しいユーザーかどうか確認する
-    def valid_user_check
-      unless (user.activated? && user.authenticated?(:reset, params[:id]))
-        redirect_to root_url
-      end
-    rescue ActiveRecord::RecordNotFound => e
-      redirect_to root_url
+    def user_valid?
+      user.activated? && user.authenticated?(:reset, params[:id])
     end
 
     #トークンが期限切れかどうか確認する
@@ -54,5 +51,7 @@ class PasswordResetsController < ApplicationController
         flash[:danger] = "再設定用のリンクの期限が切れています。もう一度送信しなおしてください"
         redirect_to new_password_reset_url
       end
+    rescue ActiveRecord::RecordNotFound => e
+      redirect_to root_url
     end
 end

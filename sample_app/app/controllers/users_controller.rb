@@ -1,7 +1,5 @@
 class UsersController < ApplicationController
-  before_action :logged_in_check, only: [:index, :edit, :update, :destroy, :following, :followers]
-  before_action :correct_user_check, only: [:edit, :update]
-  before_action :admin_or_myself_check, only: :destroy
+  before_action :check_logged_in, only: [:index, :edit, :update, :destroy, :following, :followers]
 
   def index
     @users = User.where(activated: true).paginate(page: params[:page])
@@ -29,9 +27,11 @@ class UsersController < ApplicationController
   end
 
   def edit
+    redirect_to root_url and return unless is_correct_user?
   end
 
   def update
+    redirect_to root_url and return unless is_correct_user?
     if @user.update_attributes(user_params)
       flash[:success] = "プロフィールを変更しました"
       redirect_to @user
@@ -41,10 +41,13 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    if User.find(params[:id]).destroy
-      flash[:success] = "アカウントを削除しました"
-    else
-      flash[:success] = "アカウント削除に失敗しました"
+    user = User.find(params[:id])
+    if current_user.admin? || current_user?(user)
+      if user.destroy
+        flash[:success] = "アカウントを削除しました"
+      else
+        flash[:success] = "アカウント削除に失敗しました"
+      end
     end
     redirect_to root_url
   end
@@ -69,14 +72,8 @@ class UsersController < ApplicationController
     end
 
     #正しいユーザーかどうか確認
-    def correct_user_check
+    def is_correct_user?
       @user ||= User.find(params[:id])
-      redirect_to(root_url) unless current_user?(@user)
-    end
-
-    #管理者または自身であるかどうか確認
-    def admin_or_myself_check
-      @user = User.find(params[:id])
-      redirect_to(root_url) unless current_user.admin? || current_user?(@user)
+      current_user?(@user)
     end
 end

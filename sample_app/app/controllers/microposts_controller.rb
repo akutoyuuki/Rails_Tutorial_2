@@ -1,6 +1,6 @@
 class MicropostsController < ApplicationController
-    before_action :logged_in_check, only: [:create, :destroy]
-    before_action :post_check, only: :destroy
+    before_action :check_logged_in, only: [:create, :destroy]
+    before_action :check_correct_user, only: :destroy
 
     def index
         redirect_to root_url
@@ -30,7 +30,7 @@ class MicropostsController < ApplicationController
             params.require(:micropost).permit(:content, :picture, :in_reply_to)
         end
 
-        def post_check
+        def check_correct_user
             @micropost ||= current_user.microposts.find_by(id: params[:id])
             redirect_to root_url if @micropost.nil?
         end

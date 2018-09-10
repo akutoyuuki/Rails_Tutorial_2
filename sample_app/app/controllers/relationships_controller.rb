@@ -1,5 +1,5 @@
 class RelationshipsController < ApplicationController
-    before_action :logged_in_check
+    before_action :check_logged_in
 
     def create
         @user = User.find(params[:followed_id])
